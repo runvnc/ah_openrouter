@@ -1,0 +1,7 @@
+{
+  "name": "AH OpenRouter",
+  "version": "1.0.0",
+  "description": "OpenRouter API integration service for LLM access",
+  "services": ["stream_chat"],
+  "commands": []
+}
