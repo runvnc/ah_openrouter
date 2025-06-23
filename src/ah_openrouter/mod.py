@@ -58,7 +58,6 @@ async def get_service_models(context=None):
     """Get available models for the service"""
     try:
         print("....!")
-        debug_box("OpenRouter models:")
         all_models = await client.models.list()
         print(all_models)
         print('=====>', all_models)
