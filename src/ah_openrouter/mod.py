@@ -38,10 +38,11 @@ async def stream_chat(model="meta-llama/llama-3.1-405b-instruct", messages=[], c
             temperature=temperature,
             max_tokens=max_tokens
         )
-
+        print(stream)
         async def content_stream(original_stream):
             async for chunk in original_stream:
                 if os.getenv("AH_DEBUG", "False") == "True":
+                    print(chunk)
                     print(termcolor.colored(chunk.choices[0].delta.content, "green"), end="")
 
                 yield chunk.choices[0].delta.content or ""
