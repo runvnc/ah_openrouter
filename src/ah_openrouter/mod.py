@@ -51,3 +51,25 @@ async def stream_chat(model="meta-llama/llama-3.1-405b-instruct", messages=[], c
     except Exception as e:
         print('openrouter error:', e)
         raise  # Re-raise the exception for proper error handling
+
+
+@service()
+async def get_service_models(context=None):
+    """Get available models for the service"""
+    try:
+        print("....!")
+        debug_box("OpenRouter models:")
+        all_models = await client.models.list()
+        print(all_models)
+        print('=====>', all_models)
+        ids = []
+        for model in all_models.data:
+            print('#####################################################')
+            print(model)
+            ids.append(model.id)
+
+        return { "stream_chat": ids }
+    except Exception as e:
+        print('Error getting models (OpenRouter):', e)
+        return { "stream_chat": [] }
+
