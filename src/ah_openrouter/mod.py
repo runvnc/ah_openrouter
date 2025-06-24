@@ -10,7 +10,7 @@ client = openai.AsyncOpenAI(
 )
 
 @service()
-async def stream_chat(model="meta-llama/llama-3.1-405b-instruct", messages=[], context=None, num_ctx=2048, temperature=0.0, max_tokens=3024, num_gpu_layers=12):
+async def stream_chat(model="meta-llama/llama-3.1-405b-instruct", messages=[], context=None, num_ctx=2048, temperature=0.0, max_tokens=18024, num_gpu_layers=12):
     """OpenRouter streaming chat service.
     
     Args:
@@ -36,14 +36,18 @@ async def stream_chat(model="meta-llama/llama-3.1-405b-instruct", messages=[], c
             stream=True,
             messages=messages,
             temperature=temperature,
+            response_format={"type": "json_object"},
             max_tokens=max_tokens
         )
         print(stream)
         async def content_stream(original_stream):
             async for chunk in original_stream:
-                if os.getenv("AH_DEBUG", "False") == "True":
+                if True or os.getenv("AH_DEBUG", "False") == "True":
                     print(chunk)
-                    print(termcolor.colored(chunk.choices[0].delta.content, "green"), end="")
+                    try:
+                        print(termcolor.colored(chunk.choices[0].delta.content, "green"), end="")
+                    except Exception as e1:
+                        pass
 
                 yield chunk.choices[0].delta.content or ""
 
