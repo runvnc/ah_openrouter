@@ -64,12 +64,8 @@ async def get_service_models(context=None):
     try:
         print("....!")
         all_models = await client.models.list()
-        print(all_models)
-        print('=====>', all_models)
         ids = []
         for model in all_models.data:
-            print('#####################################################')
-            print(model)
             ids.append(model.id)
 
         return { "stream_chat": ids }
