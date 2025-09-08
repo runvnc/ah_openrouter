@@ -57,6 +57,9 @@ async def stream_chat(model="meta-llama/llama-3.1-405b-instruct", messages=[], c
         print('openrouter error:', e)
         raise  # Re-raise the exception for proper error handling
 
+@service()
+async def get_image_dimensions(context=None):
+    return (1568, 1568, 1192464)
 
 @service()
 async def get_service_models(context=None):
