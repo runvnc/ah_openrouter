@@ -28,8 +28,8 @@ async def stream_chat(model="meta-llama/llama-3.1-405b-instruct", messages=[], c
     try:
         # Allow environment override of model
         if model is None and os.environ.get("AH_OVERRIDE_LLM_MODEL", None) is not None:
-            model = os.environ.get("AH_OVERRIDE_LLM_MODEL")
-            print("Overriding model env specified ", model)
+            #model = os.environ.get("AH_OVERRIDE_LLM_MODEL")
+            #print("Overriding model env specified ", model)
 
         stream = await client.chat.completions.create(
             model=model,
