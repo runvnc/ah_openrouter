@@ -62,6 +62,23 @@ async def get_image_dimensions(context=None):
     return (1568, 1568, 1192464)
 
 @service()
+async def format_image_message(pil_image, context=None):
+    """Format image for DeepSeek using OpenAI's image format"""
+    buffer = BytesIO()
+    print('converting to base64')
+    pil_image.save(buffer, format='PNG')
+    image_base64 = base64.b64encode(buffer.getvalue()).decode('utf-8')
+    print('done')
+    
+    return {
+        "type": "image_url",
+        "image_url": {
+            "url": f"data:image/png;base64,{image_base64}"
+        }
+    }
+
+
+@service()
 async def get_service_models(context=None):
     """Get available models for the service"""
     try:
