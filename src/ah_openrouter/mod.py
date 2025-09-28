@@ -3,6 +3,8 @@ import os
 import openai
 import termcolor
 from os import getenv
+import base64
+from io import BytesIO
 
 client = openai.AsyncOpenAI(
     base_url="https://openrouter.ai/api/v1",
