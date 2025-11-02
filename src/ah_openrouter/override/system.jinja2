@@ -1,0 +1,8 @@
+{% block sysinfo %}
+{% if agent and agent.get("thinking_level") == "off" %}
+</thinking>
+{% endif %}
+
+Current System Date: {{ formatted_datetime }}
+
+{% endblock %}
