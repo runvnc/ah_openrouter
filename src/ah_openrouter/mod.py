@@ -50,8 +50,9 @@ async def stream_chat(model="meta-llama/llama-3.1-405b-instruct", messages=[], c
                         print(termcolor.colored(chunk.choices[0].delta.content, "green"), end="")
                     except Exception as e1:
                         pass
-
-                yield chunk.choices[0].delta.content or ""
+                content = chunk.choices[0].delta.content
+                if content is not None and content is not "": 
+                    yield content
 
         return content_stream(stream)
 
