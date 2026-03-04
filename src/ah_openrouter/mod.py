@@ -54,9 +54,10 @@ async def stream_chat(model="meta-llama/llama-3.1-405b-instruct", messages=[], c
                     except Exception as e1:
                         print('1 openrouter error:', e)
                         pass
-                content = chunk.choices[0].delta.content
-                if content is not None and content is not "": 
-                    yield content
+                if len(chunk.choices)>0:
+                    content = chunk.choices[0].delta.content
+                    if content is not None and content is not "": 
+                        yield content
 
         return content_stream(stream)
 
