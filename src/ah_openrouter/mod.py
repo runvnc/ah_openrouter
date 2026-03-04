@@ -6,6 +6,8 @@ from os import getenv
 import base64
 from io import BytesIO
 
+
+
 client = openai.AsyncOpenAI(
     base_url="https://openrouter.ai/api/v1",
     api_key=getenv("OPENROUTER_KEY")
@@ -47,8 +49,10 @@ async def stream_chat(model="meta-llama/llama-3.1-405b-instruct", messages=[], c
                 if True or os.getenv("AH_DEBUG", "False") == "True":
                     print(chunk)
                     try:
-                        print(termcolor.colored(chunk.choices[0].delta.content, "green"), end="")
+                        if len(chunk.choices)>0:
+                            print(termcolor.colored(chunk.choices[0].delta.content, "green"), end="")
                     except Exception as e1:
+                        print('1 openrouter error:', e)
                         pass
                 content = chunk.choices[0].delta.content
                 if content is not None and content is not "": 
@@ -85,6 +89,38 @@ async def format_image_message(pil_image, context=None):
         "image_url": {
             "url": f"data:image/png;base64,{image_base64}"
         }
+    }
+
+
+@service()
+async def format_audio_message(
+    audio_bytes: bytes,
+    *,
+    mime_type: str = "audio/wav",
+    context=None,
+):
+    """Format audio for Mistral Voxtral via OpenRouter.
+
+    Voxtral expects chat message content chunks of type `input_audio` where
+    `input_audio` is a base64-encoded audio payload.
+
+    Reference example (Mistral docs):
+      {"role":"user","content":[{"type":"input_audio","input_audio": "<base64>"}, {"type":"text","text":"..."}]}
+
+    Note: OpenRouter generally accepts data URLs for file inputs, but Voxtral's
+    documented chat format is `input_audio` base64.
+    """
+    if audio_bytes is None:
+        raise ValueError("audio_bytes is required")
+
+    audio_base64 = base64.b64encode(audio_bytes).decode("utf-8")
+
+    # Voxtral/Mistral chat-completions format
+    return {
+        "type": "input_audio",
+        "input_audio": audio_base64,
+        # keep mime_type for potential future use/debugging
+        "_mime_type": mime_type,
     }
 
 
