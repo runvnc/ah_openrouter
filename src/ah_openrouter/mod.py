@@ -14,7 +14,7 @@ client = openai.AsyncOpenAI(
 )
 
 @service()
-async def stream_chat(model="meta-llama/llama-3.1-405b-instruct", messages=[], context=None, num_ctx=2048, temperature=0.01, max_tokens=18024, num_gpu_layers=12):
+async def stream_chat(model="meta-llama/llama-3.1-405b-instruct", messages=[], context=None, num_ctx=2048, temperature=0.001, max_tokens=18024, num_gpu_layers=12):
     """OpenRouter streaming chat service.
     
     Args:
@@ -42,7 +42,7 @@ async def stream_chat(model="meta-llama/llama-3.1-405b-instruct", messages=[], c
             temperature=temperature,
             #response_format={"type": "json_object"},
             max_tokens=max_tokens,
-            presence_penalty=0.05
+            presence_penalty=0.01
         )
         print(stream)
         async def content_stream(original_stream):
