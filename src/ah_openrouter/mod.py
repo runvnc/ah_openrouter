@@ -14,7 +14,7 @@ client = openai.AsyncOpenAI(
 )
 
 @service()
-async def stream_chat(model="meta-llama/llama-3.1-405b-instruct", messages=[], context=None, num_ctx=2048, temperature=0.001, max_tokens=18024, num_gpu_layers=12):
+async def stream_chat(model="meta-llama/llama-3.1-405b-instruct", messages=[], context=None, num_ctx=2048, temperature=0.0, max_tokens=18024, num_gpu_layers=12):
     """OpenRouter streaming chat service.
     
     Args:
@@ -41,8 +41,8 @@ async def stream_chat(model="meta-llama/llama-3.1-405b-instruct", messages=[], c
             messages=messages,
             temperature=temperature,
             #response_format={"type": "json_object"},
-            max_tokens=max_tokens,
-            presence_penalty=0.01
+            max_tokens=max_tokens
+            #presence_penalty=0.01
         )
         print(stream)
         async def content_stream(original_stream):
@@ -77,15 +77,7 @@ async def format_image_message(pil_image, context=None):
     print('converting to base64')
     pil_image.save(buffer, format='PNG')
     image_base64 = base64.b64encode(buffer.getvalue()).decode('utf-8')
-    print('done')
-    print('BLUUURRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRP') 
-    print('BLUUURRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRP') 
-    print('BLUUURRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRP') 
-    print('BLUUURRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRP') 
-    print('BLUUURRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRP') 
-    print('BLUUURRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRP') 
-    print('BLUUURRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRP') 
- 
+
     return {
         "type": "image_url",
         "image_url": {
