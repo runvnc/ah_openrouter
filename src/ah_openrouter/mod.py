@@ -47,7 +47,7 @@ async def stream_chat(model="meta-llama/llama-3.1-405b-instruct", messages=[], c
         print(stream)
         async def content_stream(original_stream):
             async for chunk in original_stream:
-                if True or os.getenv("AH_DEBUG", "False") == "True":
+                if os.getenv("AH_DEBUG", "False") == "True":
                     print(chunk)
                     try:
                         if len(chunk.choices)>0:
