@@ -92,6 +92,7 @@ async def stream_chat(model="meta-llama/llama-3.1-405b-instruct", messages=[], c
         async def content_stream(original_stream):
             in_reasoning = False
             reasoning_started = False
+            need_strip_bracket = False
 
             async for chunk in original_stream:
                 if os.getenv("AH_DEBUG", "False") == "True":
@@ -136,6 +137,7 @@ async def stream_chat(model="meta-llama/llama-3.1-405b-instruct", messages=[], c
                     if not reasoning_started:
                         reasoning_started = True
                         in_reasoning = True
+                        # Start the array and reasoning object
                         yield '[{"reasoning": "'
                     json_str = json.dumps(reasoning_content)
                     without_quotes = json_str[1:-1]
@@ -148,12 +150,26 @@ async def stream_chat(model="meta-llama/llama-3.1-405b-instruct", messages=[], c
                     # If we were in reasoning, close the reasoning block first
                     if in_reasoning:
                         in_reasoning = False
-                        yield '"}] \n'
+                        # Close reasoning value and object, add comma to continue the array
+                        yield '"}, '
+                        need_strip_bracket = True
+                    # Strip the leading [ from LLM's command array so it merges
+                    # into the reasoning array
+                    if need_strip_bracket:
+                        content = content.lstrip()
+                        if not content:
+                            # Pure whitespace chunk, keep waiting for the bracket
+                            continue
+                        elif content.startswith('['):
+                            content = content[1:]
+                            need_strip_bracket = False
+                        else:
+                            need_strip_bracket = False
                     yield content
 
             # If stream ends while still in reasoning block, close it
             if in_reasoning:
-                yield '"}] \n'
+                yield '"}]\n'
 
         return content_stream(stream)
 
