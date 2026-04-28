@@ -53,7 +53,7 @@ def get_thinking_budget(context):
 
 
 @service()
-async def stream_chat(model="meta-llama/llama-3.1-405b-instruct", messages=[], context=None, num_ctx=2048, temperature=0.0, max_tokens=18024, num_gpu_layers=12):
+async def stream_chat(model="meta-llama/llama-3.1-405b-instruct", messages=[], context=None, num_ctx=2048, temperature=0.0, max_tokens=30024, num_gpu_layers=12):
     """OpenRouter streaming chat service with reasoning token support.
 
     Args:
