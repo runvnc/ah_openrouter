@@ -73,6 +73,13 @@ async def stream_chat(model="meta-llama/llama-3.1-405b-instruct", messages=[], c
         reasoning_config = get_thinking_budget(context)
         thinking_enabled = reasoning_config is not None
 
+        # Even when thinking isn't explicitly configured, some models reason
+        # by default (Kimi K2, GLM-5, etc.) and can consume all tokens.
+        # Set a default reasoning.max_tokens cap to reserve tokens for content.
+        if reasoning_config is None:
+            reasoning_config = {'max_tokens': max_tokens // 2}
+            thinking_enabled = True
+
         kwargs = {
             'model': model,
             'stream': True,
