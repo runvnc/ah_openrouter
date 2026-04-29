@@ -86,6 +86,9 @@ async def stream_chat(model="meta-llama/llama-3.1-405b-instruct", messages=[], c
             'messages': messages,
             'temperature': temperature,
             'max_tokens': max_tokens,
+            "reasoning": {
+                "exclude": true
+            }
         }
 
         if thinking_enabled:
