@@ -105,6 +105,7 @@ async def stream_chat(model="meta-llama/llama-3.1-405b-instruct", messages=[], c
             in_reasoning = False
             reasoning_started = False
             need_strip_bracket = False
+            reasoning_pending = ''  # Buffer for backslash at chunk boundaries
 
             async for chunk in original_stream:
                 if os.getenv("AH_DEBUG", "False") == "True":
@@ -140,7 +141,15 @@ async def stream_chat(model="meta-llama/llama-3.1-405b-instruct", messages=[], c
                                 yield '[{"reasoning": "'
                             json_str = json.dumps(text)
                             without_quotes = json_str[1:-1]
-                            yield without_quotes
+                            # Buffer backslash at end of chunk to prevent
+                            # invalid escape sequences at chunk boundaries
+                            combined = reasoning_pending + without_quotes
+                            reasoning_pending = ''
+                            if combined.endswith('\\'):
+                                reasoning_pending = '\\'
+                                combined = combined[:-1]
+                            if combined:
+                                yield combined
                     continue
 
                 # Check for reasoning / reasoning_content (legacy format, e.g. DeepSeek R1)
@@ -153,7 +162,13 @@ async def stream_chat(model="meta-llama/llama-3.1-405b-instruct", messages=[], c
                         yield '[{"reasoning": "'
                     json_str = json.dumps(reasoning_content)
                     without_quotes = json_str[1:-1]
-                    yield without_quotes
+                    combined = reasoning_pending + without_quotes
+                    reasoning_pending = ''
+                    if combined.endswith('\\'):
+                        reasoning_pending = '\\'
+                        combined = combined[:-1]
+                    if combined:
+                        yield combined
                     continue
 
                 # Regular content
@@ -162,6 +177,10 @@ async def stream_chat(model="meta-llama/llama-3.1-405b-instruct", messages=[], c
                     # If we were in reasoning, close the reasoning block first
                     if in_reasoning:
                         in_reasoning = False
+                        # Flush any pending reasoning buffer before closing
+                        if reasoning_pending:
+                            yield reasoning_pending
+                            reasoning_pending = ''
                         # Close reasoning value and object, add comma to continue the array
                         yield '"}, '
                         need_strip_bracket = True
@@ -181,6 +200,10 @@ async def stream_chat(model="meta-llama/llama-3.1-405b-instruct", messages=[], c
 
             # If stream ends while still in reasoning block, close it
             if in_reasoning:
+                # Flush any pending reasoning buffer before closing
+                if reasoning_pending:
+                    yield reasoning_pending
+                    reasoning_pending = ''
                 yield '"}]\n'
 
         return content_stream(stream)
