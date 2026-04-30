@@ -25,6 +25,7 @@ def get_thinking_budget(context):
     if context is not None:
         thinking_level = context.agent.get('thinking_level', thinking_level)
 
+    print("found thinking level")
     # Map MindRoot thinking levels to OpenRouter reasoning effort levels
     effort_map = {
         'off': None,
@@ -73,12 +74,9 @@ async def stream_chat(model="meta-llama/llama-3.1-405b-instruct", messages=[], c
         reasoning_config = get_thinking_budget(context)
         thinking_enabled = reasoning_config is not None
 
-        # Even when thinking isn't explicitly configured, some models reason
-        # by default (Kimi K2, GLM-5, etc.) and can consume all tokens.
-        # Set a default reasoning.max_tokens cap to reserve tokens for content.
-        if reasoning_config is None:
-            reasoning_config = {'max_tokens': max_tokens // 2}
-            thinking_enabled = True
+        #if reasoning_config is None:
+        #    reasoning_config = {'max_tokens': max_tokens // 2}
+        #    thinking_enabled = True
 
         kwargs = {
             'model': model,
@@ -94,7 +92,8 @@ async def stream_chat(model="meta-llama/llama-3.1-405b-instruct", messages=[], c
         }
 
         if thinking_enabled:
-            kwargs['extra_body'] = {'reasoning': reasoning_config}
+            # if extra_body already has a reasoning config (e.g. from context), merge it with the default
+            reasoning_config = {**{'exclude': True}, **reasoning_config} if kwargs.get('extra_body', {}).get('reasoning') else reasoning_config
             # Some reasoning models require temperature=1
             # but OpenRouter handles this per-provider, so we leave it
 
