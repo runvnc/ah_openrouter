@@ -21,7 +21,7 @@ def get_thinking_budget(context):
     Returns a dict suitable for passing as extra_body['reasoning'], or None
     if thinking is disabled.
     """
-    thinking_level = os.environ.get('MR_THINKING_LEVEL', 'medium').lower()
+    thinking_level = os.environ.get('MR_THINKING_LEVEL', 'off').lower()
     if context is not None:
         thinking_level = context.agent.get('thinking_level', thinking_level)
 
@@ -98,6 +98,7 @@ async def stream_chat(model="meta-llama/llama-3.1-405b-instruct", messages=[], c
             # Some reasoning models require temperature=1
             # but OpenRouter handles this per-provider, so we leave it
 
+        print(kwargs['extra_body'])
         stream = await client.chat.completions.create(**kwargs)
         print(stream)
 
