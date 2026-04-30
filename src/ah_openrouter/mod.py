@@ -53,7 +53,7 @@ def get_thinking_budget(context):
 
 
 @service()
-async def stream_chat(model="meta-llama/llama-3.1-405b-instruct", messages=[], context=None, num_ctx=2048, temperature=0.0, max_tokens=30024, num_gpu_layers=12):
+async def stream_chat(model="meta-llama/llama-3.1-405b-instruct", messages=[], context=None, num_ctx=2048, temperature=0.0, max_tokens=20024, num_gpu_layers=12):
     """OpenRouter streaming chat service with reasoning token support.
 
     Args:
@@ -86,11 +86,11 @@ async def stream_chat(model="meta-llama/llama-3.1-405b-instruct", messages=[], c
             'messages': messages,
             'temperature': temperature,
             'max_tokens': max_tokens
-            #'extra_body': {
-            #    "reasoning": {
-            #        "exclude": True
-            #   }
-            #}
+            'extra_body': {
+                "reasoning": {
+                    "exclude": True
+               }
+            }
         }
 
         if thinking_enabled:
@@ -124,7 +124,7 @@ async def stream_chat(model="meta-llama/llama-3.1-405b-instruct", messages=[], c
 
                 # Check for reasoning_details (newer unified format)
                 reasoning_details = getattr(delta, 'reasoning_details', None)
-                if reasoning_details:
+                if False and reasoning_details:
                     for detail in reasoning_details:
                         detail_type = detail.get('type', '') if isinstance(detail, dict) else getattr(detail, 'type', '')
                         text = None
@@ -154,7 +154,7 @@ async def stream_chat(model="meta-llama/llama-3.1-405b-instruct", messages=[], c
 
                 # Check for reasoning / reasoning_content (legacy format, e.g. DeepSeek R1)
                 reasoning_content = getattr(delta, 'reasoning_content', None) or getattr(delta, 'reasoning', None)
-                if reasoning_content:
+                if False and reasoning_content:
                     if not reasoning_started:
                         reasoning_started = True
                         in_reasoning = True
@@ -199,7 +199,7 @@ async def stream_chat(model="meta-llama/llama-3.1-405b-instruct", messages=[], c
                     yield content
 
             # If stream ends while still in reasoning block, close it
-            if in_reasoning:
+            if False and in_reasoning:
                 # Flush any pending reasoning buffer before closing
                 if reasoning_pending:
                     yield reasoning_pending
