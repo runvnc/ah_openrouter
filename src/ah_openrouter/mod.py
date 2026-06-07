@@ -6,6 +6,7 @@ from os import getenv
 import base64
 from io import BytesIO
 import json
+import time
 
 
 client = openai.AsyncOpenAI(
@@ -106,6 +107,23 @@ async def stream_chat(model="meta-llama/llama-3.1-405b-instruct", messages=[], c
             reasoning_started = False
             need_strip_bracket = False
             reasoning_pending = ''  # Buffer for backslash at chunk boundaries
+            pending_content = ''
+            last_content_flush = time.monotonic()
+            # Coalesce tiny provider token chunks before handing them to MindRoot's
+            # JSON command parser. This avoids O(n^2)-ish reparsing/partial-SSE churn.
+            flush_interval = float(os.getenv("AH_STREAM_FLUSH_INTERVAL", "0.025"))
+            flush_chars = int(os.getenv("AH_STREAM_FLUSH_CHARS", "512"))
+            slow_after_chars = int(os.getenv("AH_STREAM_FLUSH_SLOW_AFTER_CHARS", "2000"))
+            slow_interval = float(os.getenv("AH_STREAM_FLUSH_SLOW_INTERVAL", "0.5"))
+            slow_flush_chars = int(os.getenv("AH_STREAM_FLUSH_SLOW_CHARS", "4096"))
+            very_slow_after_chars = int(os.getenv("AH_STREAM_FLUSH_VERY_SLOW_AFTER_CHARS", "8000"))
+            very_slow_interval = float(os.getenv("AH_STREAM_FLUSH_VERY_SLOW_INTERVAL", "1.0"))
+            very_slow_flush_chars = int(os.getenv("AH_STREAM_FLUSH_VERY_SLOW_CHARS", "8192"))
+            streamed_content_chars = 0
+            def current_flush_interval():
+                return very_slow_interval if streamed_content_chars >= very_slow_after_chars else slow_interval if streamed_content_chars >= slow_after_chars else flush_interval
+            def current_flush_chars():
+                return very_slow_flush_chars if streamed_content_chars >= very_slow_after_chars else slow_flush_chars if streamed_content_chars >= slow_after_chars else flush_chars
 
             async for chunk in original_stream:
                 if os.getenv("AH_DEBUG", "False") == "True":
@@ -196,7 +214,27 @@ async def stream_chat(model="meta-llama/llama-3.1-405b-instruct", messages=[], c
                             need_strip_bracket = False
                         else:
                             need_strip_bracket = False
-                    yield content
+                    if flush_interval <= 0 or flush_chars <= 0:
+                        yield content
+                    else:
+                        pending_content += content
+                        now = time.monotonic()
+                        interval = current_flush_interval()
+                        chars = current_flush_chars()
+                        stripped = pending_content.rstrip()
+                        if (
+                            len(pending_content) >= chars
+                            or (now - last_content_flush) >= interval
+                            or stripped.endswith(']')
+                        ):
+                            yield pending_content
+                            streamed_content_chars += len(pending_content)
+                            pending_content = ''
+                            last_content_flush = now
+
+            if pending_content:
+                streamed_content_chars += len(pending_content)
+                yield pending_content
 
             # If stream ends while still in reasoning block, close it
             if False and in_reasoning:
